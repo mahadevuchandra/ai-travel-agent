@@ -13,8 +13,6 @@ WEATHER_API_KEY = os.getenv("WEATHER_API_KEY")
 genai.configure(api_key=GOOGLE_API_KEY)
 model = genai.GenerativeModel("gemini-2.0-flash")
 
-from datetime import datetime, timedelta
-
 def get_weather(city, start_date):
     url = f"https://api.openweathermap.org/data/2.5/forecast?q={city}&appid={WEATHER_API_KEY}&units=metric"
     response = requests.get(url)
@@ -23,19 +21,7 @@ def get_weather(city, start_date):
     if "list" not in data:
         return [{"dt_txt": "N/A", "main": {"temp": "N/A"}, "weather": [{"description": "No data"}]}]
 
-    forecasts = data["list"]
-    
-    # Parse date range
-    start = datetime.strptime(start_date, "%Y-%m-%d")
-    end = start + timedelta(days=6)
-
-    filtered = []
-    for entry in forecasts:
-        entry_time = datetime.strptime(entry["dt_txt"], "%Y-%m-%d %H:%M:%S")
-        if start <= entry_time <= end:
-            filtered.append(entry)
-
-    return filtered
+    return data["list"][:5]  # Return first 5 forecast entries (can be refined)
 
 def generate_prompt(destination, start_date, end_date, interests):
     interest_str = ", ".join(interests)
